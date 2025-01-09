@@ -1,0 +1,649 @@
+-- Create the database
+CREATE DATABASE SalesDB;
+GO
+
+USE SalesDB;
+GO
+
+-- Create tables
+CREATE TABLE TblProduct1 (
+    pcode NVARCHAR(50) PRIMARY KEY,
+    pdesc NVARCHAR(255) NOT NULL,
+    price DECIMAL(18, 2) NOT NULL,
+    qty INT NOT NULL
+);
+
+CREATE TABLE tblCart1 (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    transno NVARCHAR(50) NOT NULL,
+    pcode NVARCHAR(50) NOT NULL,
+    price DECIMAL(18, 2) NOT NULL,
+    qty INT NOT NULL,
+    disc DECIMAL(18, 2) NOT NULL,
+    total DECIMAL(18, 2) NOT NULL,
+    sdate DATETIME NOT NULL,
+    status NVARCHAR(50) NOT NULL,
+    FOREIGN KEY (pcode) REFERENCES TblProduct1(pcode)
+);
+
+CREATE TABLE tblStockin (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    refno NVARCHAR(50) NOT NULL,
+    pcode NVARCHAR(50) NOT NULL,
+    sdate DATETIME NOT NULL,
+    stockinby NVARCHAR(50) NOT NULL,
+    vendorid NVARCHAR(50) NOT NULL,
+    FOREIGN KEY (pcode) REFERENCES TblProduct1(pcode)
+);
+
+-- Create views
+CREATE VIEW vwStockin AS
+SELECT 
+    refno, 
+    pcode, 
+    sdate, 
+    stockinby, 
+    vendorid
+FROM tblStockin;
+
+CREATE VIEW vwSoldItems AS
+SELECT 
+    c.pcode, 
+    p.pdesc, 
+    c.price, 
+    c.qty, 
+    c.disc, 
+    c.total, 
+    c.sdate, 
+    c.status
+FROM tblCart1 AS c
+INNER JOIN TblProduct1 AS p ON c.pcode = p.pcode;
+
+CREATE VIEW vwCancelledOrder AS
+SELECT 
+    c.id, 
+    c.transno, 
+    c.pcode, 
+    p.pdesc, 
+    c.price, 
+    c.qty, 
+    c.disc, 
+    c.total, 
+    c.sdate, 
+    c.status
+FROM tblCart1 AS c
+INNER JOIN TblProduct1 AS p ON c.pcode = p.pcode
+WHERE c.status = 'Cancelled';
+
+-- Create stored procedures
+CREATE PROCEDURE spGetTopSellingByQty
+    @startDate DATETIME,
+    @endDate DATETIME
+AS
+BEGIN
+    SELECT TOP 10 
+        pcode, 
+        pdesc, 
+        SUM(qty) AS qty, 
+        ISNULL(SUM(total), 0) AS total
+    FROM vwSoldItems
+    WHERE sdate BETWEEN @startDate AND @endDate AND status LIKE 'Sold'
+    GROUP BY pcode, pdesc
+    ORDER BY qty DESC;
+END;
+
+CREATE PROCEDURE spGetTopSellingByTotal
+    @startDate DATETIME,
+    @endDate DATETIME
+AS
+BEGIN
+    SELECT TOP 10 
+        pcode, 
+        pdesc, 
+        SUM(qty) AS qty, 
+        ISNULL(SUM(total), 0) AS total
+    FROM vwSoldItems
+    WHERE sdate BETWEEN @startDate AND @endDate AND status LIKE 'Sold'
+    GROUP BY pcode, pdesc
+    ORDER BY total DESC;
+END;
+
+CREATE PROCEDURE spLoadSoldItems
+    @startDate DATETIME,
+    @endDate DATETIME
+AS
+BEGIN
+    SELECT 
+        c.pcode, 
+        p.pdesc, 
+        c.price, 
+        SUM(c.qty) AS tot_qty, 
+        SUM(c.disc) AS tot_disc, 
+        SUM(c.total) AS total
+    FROM tblCart1 AS c
+    INNER JOIN TblProduct1 AS p ON c.pcode = p.pcode
+    WHERE c.status LIKE 'Sold' AND c.sdate BETWEEN @startDate AND @endDate
+    GROUP BY c.pcode, p.pdesc, c.price;
+END;
+
+-- Sample indexes for optimization
+CREATE INDEX idx_sdate_tblCart1 ON tblCart1(sdate);
+CREATE INDEX idx_pcode_tblProduct1 ON TblProduct1(pcode);
+
+
+ALTER TABLE tblCart1
+ADD Cashier NVARCHAR(100);
+
+ALTER TABLE TblProduct1
+ADD qty INT;
+
+ALTER TABLE tblStockin
+ADD status NVARCHAR(50);
+
+CREATE TABLE tblStore (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    store NVARCHAR(255),
+    address NVARCHAR(255),
+    phone NVARCHAR(50)
+);
+
+CREATE TABLE tblVendor (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    vender NVARCHAR(255),
+    address NVARCHAR(255),
+    contactperson NVARCHAR(255),
+    telephone NVARCHAR(50),
+    email NVARCHAR(255),
+    fax NVARCHAR(50)
+);
+
+ALTER TABLE tblUser
+ADD isactive BIT;
+
+ALTER TABLE tblCart1 ADD CONSTRAINT PK_tblCart1 PRIMARY KEY (id);
+ALTER TABLE TblProduct1 ADD CONSTRAINT PK_TblProduct1 PRIMARY KEY (pcode);
+
+ALTER TABLE tblUser ADD CONSTRAINT UQ_username UNIQUE (username);
+
+CREATE PROCEDURE spInsertVendor
+    @vender NVARCHAR(255),
+    @address NVARCHAR(255),
+    @contactperson NVARCHAR(255),
+    @telephone NVARCHAR(50),
+    @email NVARCHAR(255),
+    @fax NVARCHAR(50)
+AS
+BEGIN
+    INSERT INTO tblVendor (vender, address, contactperson, telephone, email, fax)
+    VALUES (@vender, @address, @contactperson, @telephone, @email, @fax);
+END;
+
+CREATE PROCEDURE spUpdateVendor
+    @id INT,
+    @vender NVARCHAR(255),
+    @address NVARCHAR(255),
+    @contactperson NVARCHAR(255),
+    @telephone NVARCHAR(50),
+    @email NVARCHAR(255),
+    @fax NVARCHAR(50)
+AS
+BEGIN
+    UPDATE tblVendor
+    SET vender = @vender, address = @address, contactperson = @contactperson,
+        telephone = @telephone, email = @email, fax = @fax
+    WHERE id = @id;
+END;
+
+CREATE DATABASE POSDatabase;
+GO
+
+USE POSDatabase;
+
+-- Table: TblProduct1
+CREATE TABLE TblProduct1 (
+    pcode NVARCHAR(50) PRIMARY KEY,
+    barcode NVARCHAR(50),
+    pdesc NVARCHAR(255),
+    price DECIMAL(18, 2),
+    qty INT,
+    bid INT,
+    cid INT,
+    reorder INT,
+    FOREIGN KEY (bid) REFERENCES BrandTbl(id),
+    FOREIGN KEY (cid) REFERENCES TblCatecory(id)
+);
+
+-- Table: BrandTbl
+CREATE TABLE BrandTbl (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    brand NVARCHAR(100) NOT NULL
+);
+
+-- Table: TblCatecory
+CREATE TABLE TblCatecory (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    category NVARCHAR(100) NOT NULL
+);
+
+-- Table: tblAdjustment
+CREATE TABLE tblAdjustment (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    referenceno NVARCHAR(50),
+    pcode NVARCHAR(50),
+    qty INT,
+    action NVARCHAR(50),
+    remarks NVARCHAR(255),
+    sdate DATE,
+    [user] NVARCHAR(50),
+    FOREIGN KEY (pcode) REFERENCES TblProduct1(pcode)
+);
+
+-- Table: tblUser
+CREATE TABLE tblUser (
+    username NVARCHAR(50) PRIMARY KEY,
+    [password] NVARCHAR(255) NOT NULL
+);
+
+-- Table: tblCart1
+CREATE TABLE tblCart1 (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    transno NVARCHAR(50),
+    pcode NVARCHAR(50),
+    price DECIMAL(18, 2),
+    qty INT,
+    disc DECIMAL(18, 2),
+    disc_precent DECIMAL(5, 2),
+    total DECIMAL(18, 2),
+    status NVARCHAR(50),
+    FOREIGN KEY (pcode) REFERENCES TblProduct1(pcode)
+);
+
+-- Table: tblStore
+CREATE TABLE tblStore (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    store NVARCHAR(255),
+    address NVARCHAR(255),
+    phone NVARCHAR(50)
+);
+
+-- View: vwCriticalItems
+CREATE VIEW vwCriticalItems AS
+SELECT p.pcode, p.pdesc, p.qty
+FROM TblProduct1 AS p
+WHERE p.qty <= p.reorder;
+GO
+-+----------------------------------------Full DB-------------------------------------------
+-- Create the database
+CREATE DATABASE POSWinFormsDatabase;
+GO
+
+USE POSWinFormsDatabase;
+GO
+
+-- Table: TblProduct1
+CREATE TABLE TblProduct1 (
+    pcode NVARCHAR(50) PRIMARY KEY,
+    barcode NVARCHAR(50),
+    pdesc NVARCHAR(255) NOT NULL,
+    price DECIMAL(18, 2) NOT NULL,
+    qty INT NOT NULL,
+    bid INT,
+    cid INT,
+    reorder INT,
+    FOREIGN KEY (bid) REFERENCES BrandTbl(id),
+    FOREIGN KEY (cid) REFERENCES TblCatecory(id)
+);
+
+-- Table: BrandTbl
+CREATE TABLE BrandTbl (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    brand NVARCHAR(100) NOT NULL
+);
+
+-- Table: TblCatecory
+CREATE TABLE TblCatecory (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    category NVARCHAR(100) NOT NULL
+);
+
+-- Table: tblAdjustment
+CREATE TABLE tblAdjustment (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    referenceno NVARCHAR(50) NOT NULL,
+    pcode NVARCHAR(50) NOT NULL,
+    qty INT NOT NULL,
+    action NVARCHAR(50) NOT NULL,
+    remarks NVARCHAR(255),
+    sdate DATE NOT NULL,
+    [user] NVARCHAR(50) NOT NULL,
+    FOREIGN KEY (pcode) REFERENCES TblProduct1(pcode)
+);
+
+-- Table: tblUser
+CREATE TABLE tblUser (
+    username NVARCHAR(50) PRIMARY KEY,
+    [password] NVARCHAR(255) NOT NULL,
+    isactive BIT DEFAULT 1
+);
+
+-- Table: tblCart1
+CREATE TABLE tblCart1 (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    transno NVARCHAR(50) NOT NULL,
+    pcode NVARCHAR(50) NOT NULL,
+    price DECIMAL(18, 2) NOT NULL,
+    qty INT NOT NULL,
+    disc DECIMAL(18, 2) NOT NULL,
+    disc_percent DECIMAL(5, 2),
+    total DECIMAL(18, 2) NOT NULL,
+    sdate DATETIME NOT NULL,
+    status NVARCHAR(50) NOT NULL,
+    Cashier NVARCHAR(100),
+    FOREIGN KEY (pcode) REFERENCES TblProduct1(pcode)
+);
+
+-- Table: tblStockin
+CREATE TABLE tblStockin (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    refno NVARCHAR(50) NOT NULL,
+    pcode NVARCHAR(50) NOT NULL,
+    sdate DATETIME NOT NULL,
+    stockinby NVARCHAR(50) NOT NULL,
+    vendorid NVARCHAR(50) NOT NULL,
+    status NVARCHAR(50) NOT NULL,
+    FOREIGN KEY (pcode) REFERENCES TblProduct1(pcode)
+);
+
+-- Table: tblStore
+CREATE TABLE tblStore (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    store NVARCHAR(255) NOT NULL,
+    address NVARCHAR(255),
+    phone NVARCHAR(50)
+);
+
+-- Table: tblVendor
+CREATE TABLE tblVendor (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    vender NVARCHAR(255) NOT NULL,
+    address NVARCHAR(255),
+    contactperson NVARCHAR(255),
+    telephone NVARCHAR(50),
+    email NVARCHAR(255),
+    fax NVARCHAR(50)
+);
+
+-- Views
+CREATE VIEW vwStockin AS
+SELECT 
+    refno, 
+    pcode, 
+    sdate, 
+    stockinby, 
+    vendorid
+FROM tblStockin;
+
+CREATE VIEW vwSoldItems AS
+SELECT 
+    c.pcode, 
+    p.pdesc, 
+    c.price, 
+    c.qty, 
+    c.disc, 
+    c.total, 
+    c.sdate, 
+    c.status
+FROM tblCart1 AS c
+INNER JOIN TblProduct1 AS p ON c.pcode = p.pcode;
+
+CREATE VIEW vwCancelledOrder AS
+SELECT 
+    c.id, 
+    c.transno, 
+    c.pcode, 
+    p.pdesc, 
+    c.price, 
+    c.qty, 
+    c.disc, 
+    c.total, 
+    c.sdate, 
+    c.status
+FROM tblCart1 AS c
+INNER JOIN TblProduct1 AS p ON c.pcode = p.pcode
+WHERE c.status = 'Cancelled';
+
+CREATE VIEW vwCriticalItems AS
+SELECT p.pcode, p.pdesc, p.qty
+FROM TblProduct1 AS p
+WHERE p.qty <= p.reorder;
+
+-- Stored Procedures
+CREATE PROCEDURE spGetTopSellingByQty
+    @startDate DATETIME,
+    @endDate DATETIME
+AS
+BEGIN
+    SELECT TOP 10 
+        pcode, 
+        pdesc, 
+        SUM(qty) AS qty, 
+        ISNULL(SUM(total), 0) AS total
+    FROM vwSoldItems
+    WHERE sdate BETWEEN @startDate AND @endDate AND status LIKE 'Sold'
+    GROUP BY pcode, pdesc
+    ORDER BY qty DESC;
+END;
+
+CREATE PROCEDURE spGetTopSellingByTotal
+    @startDate DATETIME,
+    @endDate DATETIME
+AS
+BEGIN
+    SELECT TOP 10 
+        pcode, 
+        pdesc, 
+        SUM(qty) AS qty, 
+        ISNULL(SUM(total), 0) AS total
+    FROM vwSoldItems
+    WHERE sdate BETWEEN @startDate AND @endDate AND status LIKE 'Sold'
+    GROUP BY pcode, pdesc
+    ORDER BY total DESC;
+END;
+
+CREATE PROCEDURE spLoadSoldItems
+    @startDate DATETIME,
+    @endDate DATETIME
+AS
+BEGIN
+    SELECT 
+        c.pcode, 
+        p.pdesc, 
+        c.price, 
+        SUM(c.qty) AS tot_qty, 
+        SUM(c.disc) AS tot_disc, 
+        SUM(c.total) AS total
+    FROM tblCart1 AS c
+    INNER JOIN TblProduct1 AS p ON c.pcode = p.pcode
+    WHERE c.status LIKE 'Sold' AND c.sdate BETWEEN @startDate AND @endDate
+    GROUP BY c.pcode, p.pdesc, c.price;
+END;
+
+CREATE PROCEDURE spInsertVendor
+    @vender NVARCHAR(255),
+    @address NVARCHAR(255),
+    @contactperson NVARCHAR(255),
+    @telephone NVARCHAR(50),
+    @email NVARCHAR(255),
+    @fax NVARCHAR(50)
+AS
+BEGIN
+    INSERT INTO tblVendor (vender, address, contactperson, telephone, email, fax)
+    VALUES (@vender, @address, @contactperson, @telephone, @email, @fax);
+END;
+
+CREATE PROCEDURE spUpdateVendor
+    @id INT,
+    @vender NVARCHAR(255),
+    @address NVARCHAR(255),
+    @contactperson NVARCHAR(255),
+    @telephone NVARCHAR(50),
+    @email NVARCHAR(255),
+    @fax NVARCHAR(50)
+AS
+BEGIN
+    UPDATE tblVendor
+    SET vender = @vender, address = @address, contactperson = @contactperson,
+        telephone = @telephone, email = @email, fax = @fax
+    WHERE id = @id;
+END;
+
+-- Indexes
+CREATE INDEX idx_sdate_tblCart1 ON tblCart1(sdate);
+CREATE INDEX idx_pcode_tblProduct1 ON TblProduct1(pcode);
+
+
+
+-----------------------------------------Sample Data------------------------
+-- Create the database
+CREATE DATABASE SalesDB;
+GO
+
+USE SalesDB;
+GO
+
+-- Create tables
+CREATE TABLE TblProduct1 (
+    pcode NVARCHAR(50) PRIMARY KEY,
+    barcode NVARCHAR(50),
+    pdesc NVARCHAR(255),
+    price DECIMAL(18, 2),
+    qty INT,
+    bid INT,
+    cid INT,
+    reorder INT,
+    FOREIGN KEY (bid) REFERENCES BrandTbl(id),
+    FOREIGN KEY (cid) REFERENCES TblCatecory(id)
+);
+
+CREATE TABLE BrandTbl (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    brand NVARCHAR(100) NOT NULL
+);
+
+CREATE TABLE TblCatecory (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    category NVARCHAR(100) NOT NULL
+);
+
+CREATE TABLE tblAdjustment (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    referenceno NVARCHAR(50),
+    pcode NVARCHAR(50),
+    qty INT,
+    action NVARCHAR(50),
+    remarks NVARCHAR(255),
+    sdate DATE,
+    [user] NVARCHAR(50),
+    FOREIGN KEY (pcode) REFERENCES TblProduct1(pcode)
+);
+
+CREATE TABLE tblUser (
+    username NVARCHAR(50) PRIMARY KEY,
+    [password] NVARCHAR(255) NOT NULL,
+    isactive BIT NOT NULL DEFAULT 1
+	role NVARCHAR(50) NOT NULL,
+    name NVARCHAR(100)
+);
+
+CREATE TABLE tblCart1 (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    transno NVARCHAR(50),
+    pcode NVARCHAR(50),
+    price DECIMAL(18, 2),
+    qty INT,
+    disc DECIMAL(18, 2),
+    disc_precent DECIMAL(5, 2),
+    total DECIMAL(18, 2),
+    status NVARCHAR(50),
+    FOREIGN KEY (pcode) REFERENCES TblProduct1(pcode)
+);
+
+CREATE TABLE tblStore (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    store NVARCHAR(255),
+    address NVARCHAR(255),
+    phone NVARCHAR(50)
+);
+
+CREATE TABLE tblVendor (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    vender NVARCHAR(255),
+    address NVARCHAR(255),
+    contactperson NVARCHAR(255),
+    telephone NVARCHAR(50),
+    email NVARCHAR(255),
+    fax NVARCHAR(50)
+);
+
+-- Create views
+CREATE VIEW vwCriticalItems AS
+SELECT p.pcode, p.pdesc, p.qty
+FROM TblProduct1 AS p
+WHERE p.qty <= p.reorder;
+GO
+
+-- Insert sample data into tables
+-- BrandTbl
+INSERT INTO BrandTbl (brand) VALUES 
+('Brand A'),
+('Brand B'),
+('Brand C');
+
+-- TblCatecory
+INSERT INTO TblCatecory (category) VALUES 
+('Category 1'),
+('Category 2'),
+('Category 3');
+
+-- TblProduct1
+INSERT INTO TblProduct1 (pcode, barcode, pdesc, price, qty, bid, cid, reorder) VALUES 
+('P001', '123456789012', 'Product 1', 100.00, 50, 1, 1, 10),
+('P002', '234567890123', 'Product 2', 200.00, 20, 2, 2, 5),
+('P003', '345678901234', 'Product 3', 150.00, 5, 3, 3, 2);
+
+-- tblUser
+INSERT INTO tblUser (username, [password], isactive) VALUES 
+('admin', 'password123', 1),
+('cashier1', 'cashier123', 1),
+('cashier2', 'cashier456', 1);
+
+-- tblCart1
+INSERT INTO tblCart1 (transno, pcode, price, qty, disc, disc_precent, total, status) VALUES 
+('T001', 'P001', 100.00, 2, 10.00, 5.00, 190.00, 'Sold'),
+('T002', 'P002', 200.00, 1, 0.00, 0.00, 200.00, 'Cancelled'),
+('T003', 'P003', 150.00, 3, 30.00, 10.00, 420.00, 'Sold');
+
+-- tblAdjustment
+INSERT INTO tblAdjustment (referenceno, pcode, qty, action, remarks, sdate, [user]) VALUES 
+('A001', 'P001', 10, 'Add', 'Restocking', '2024-01-01', 'admin'),
+('A002', 'P002', -5, 'Remove', 'Damaged items', '2024-01-02', 'admin');
+
+-- tblStore
+INSERT INTO tblStore (store, address, phone) VALUES 
+('Store A', '123 Main St', '123-456-7890'),
+('Store B', '456 Market St', '987-654-3210');
+
+-- tblVendor
+INSERT INTO tblVendor (vender, address, contactperson, telephone, email, fax) VALUES 
+('Vendor A', '789 Supplier Rd', 'John Doe', '111-222-3333', 'vendorA@example.com', '123-456-7890'),
+('Vendor B', '456 Provider Ave', 'Jane Smith', '444-555-6666', 'vendorB@example.com', '987-654-3210');
+
+-- Verify sample data
+SELECT * FROM BrandTbl;
+SELECT * FROM TblCatecory;
+SELECT * FROM TblProduct1;
+SELECT * FROM tblUser;
+SELECT * FROM tblCart1;
+SELECT * FROM tblAdjustment;
+SELECT * FROM tblStore;
+SELECT * FROM tblVendor;

@@ -33,24 +33,26 @@ namespace PosSystem
             this.btnSave = new System.Windows.Forms.Button();
             this.btnCancle = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.pictureBox2 = new System.Windows.Forms.PictureBox();
-            this.txtPass = new MetroFramework.Controls.MetroTextBox();
-            this.txtUser = new MetroFramework.Controls.MetroTextBox();
             this.panel2 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.txtPass = new MetroFramework.Controls.MetroTextBox();
+            this.txtUser = new MetroFramework.Controls.MetroTextBox();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.panel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.SuspendLayout();
             // 
             // btnSave
             // 
-            this.btnSave.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(38)))), ((int)(((byte)(38)))));
+            this.btnSave.BackColor = System.Drawing.Color.DarkCyan;
             this.btnSave.FlatAppearance.BorderSize = 0;
             this.btnSave.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSave.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnSave.ForeColor = System.Drawing.Color.White;
-            this.btnSave.Location = new System.Drawing.Point(9, 324);
+            this.btnSave.Location = new System.Drawing.Point(22, 337);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(121, 30);
             this.btnSave.TabIndex = 17;
@@ -60,12 +62,12 @@ namespace PosSystem
             // 
             // btnCancle
             // 
-            this.btnCancle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
+            this.btnCancle.BackColor = System.Drawing.Color.Gray;
             this.btnCancle.FlatAppearance.BorderSize = 0;
             this.btnCancle.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCancle.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnCancle.ForeColor = System.Drawing.Color.White;
-            this.btnCancle.Location = new System.Drawing.Point(166, 324);
+            this.btnCancle.Location = new System.Drawing.Point(179, 337);
             this.btnCancle.Name = "btnCancle";
             this.btnCancle.Size = new System.Drawing.Size(121, 30);
             this.btnCancle.TabIndex = 18;
@@ -75,22 +77,42 @@ namespace PosSystem
             // 
             // panel1
             // 
-            this.panel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(47)))), ((int)(((byte)(54)))), ((int)(((byte)(64)))));
+            this.panel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(64)))));
             this.panel1.Controls.Add(this.pictureBox2);
-            this.panel1.Location = new System.Drawing.Point(-6, -1);
+            this.panel1.Location = new System.Drawing.Point(323, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(309, 223);
+            this.panel1.Size = new System.Drawing.Size(298, 389);
             this.panel1.TabIndex = 1;
             // 
-            // pictureBox2
+            // panel2
             // 
-            this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
-            this.pictureBox2.Location = new System.Drawing.Point(21, 13);
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(266, 197);
-            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox2.TabIndex = 2;
-            this.pictureBox2.TabStop = false;
+            this.panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(64)))));
+            this.panel2.Controls.Add(this.label1);
+            this.panel2.Location = new System.Drawing.Point(-1, 385);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(622, 30);
+            this.panel2.TabIndex = 19;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Bahnschrift", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.ForeColor = System.Drawing.Color.White;
+            this.label1.Location = new System.Drawing.Point(266, 7);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(114, 16);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "B-Codex Solutions";
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = global::PosSystem.Properties.Resources.pngegg;
+            this.pictureBox1.Location = new System.Drawing.Point(57, 47);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(203, 162);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox1.TabIndex = 20;
+            this.pictureBox1.TabStop = false;
             // 
             // txtPass
             // 
@@ -110,7 +132,7 @@ namespace PosSystem
             this.txtPass.FontWeight = MetroFramework.MetroTextBoxWeight.Bold;
             this.txtPass.Icon = ((System.Drawing.Image)(resources.GetObject("txtPass.Icon")));
             this.txtPass.Lines = new string[0];
-            this.txtPass.Location = new System.Drawing.Point(7, 289);
+            this.txtPass.Location = new System.Drawing.Point(20, 302);
             this.txtPass.MaxLength = 32767;
             this.txtPass.Multiline = true;
             this.txtPass.Name = "txtPass";
@@ -145,7 +167,7 @@ namespace PosSystem
             this.txtUser.DisplayIcon = true;
             this.txtUser.Icon = ((System.Drawing.Image)(resources.GetObject("txtUser.Icon")));
             this.txtUser.Lines = new string[0];
-            this.txtUser.Location = new System.Drawing.Point(8, 256);
+            this.txtUser.Location = new System.Drawing.Point(21, 269);
             this.txtUser.MaxLength = 32767;
             this.txtUser.Multiline = true;
             this.txtUser.Name = "txtUser";
@@ -163,33 +185,24 @@ namespace PosSystem
             this.txtUser.WaterMarkColor = System.Drawing.Color.FromArgb(((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
             this.txtUser.WaterMarkFont = new System.Drawing.Font("Segoe UI Semibold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             // 
-            // panel2
+            // pictureBox2
             // 
-            this.panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(47)))), ((int)(((byte)(54)))), ((int)(((byte)(64)))));
-            this.panel2.Controls.Add(this.label1);
-            this.panel2.Location = new System.Drawing.Point(-6, 385);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(309, 100);
-            this.panel2.TabIndex = 19;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Bahnschrift", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.ForeColor = System.Drawing.Color.White;
-            this.label1.Location = new System.Drawing.Point(38, 8);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(226, 16);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "DEVELOPED BY - DEELAKA LAKPURA";
+            this.pictureBox2.Image = global::PosSystem.Properties.Resources.rb_3175;
+            this.pictureBox2.Location = new System.Drawing.Point(6, 3);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(289, 376);
+            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox2.TabIndex = 21;
+            this.pictureBox2.TabStop = false;
             // 
             // frmUserLogin
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(298, 415);
+            this.ClientSize = new System.Drawing.Size(621, 415);
             this.ControlBox = false;
+            this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.btnCancle);
             this.Controls.Add(this.btnSave);
@@ -203,9 +216,10 @@ namespace PosSystem
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Load += new System.EventHandler(this.frmUserLogin_Load);
             this.panel1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -213,11 +227,12 @@ namespace PosSystem
         #endregion
         private MetroFramework.Controls.MetroTextBox txtUser;
         private MetroFramework.Controls.MetroTextBox txtPass;
-        private System.Windows.Forms.PictureBox pictureBox2;
         public System.Windows.Forms.Button btnSave;
         public System.Windows.Forms.Button btnCancle;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.PictureBox pictureBox2;
     }
 }

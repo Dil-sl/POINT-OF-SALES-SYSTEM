@@ -20,7 +20,7 @@ namespace PosSystem
 
         public string MyConnection()
         {
-            con = @"Data Source=DESKTOP-RR7R80D\SQLEXPRESS;Initial Catalog=POS_DB;Integrated Security=True";
+            con = @"Data Source=DESKTOP-MI5EGKV\MSSQLSERVER02;Initial Catalog=POSWinFormsDatabase;user=sa;password=sa;Integrated Security=True";
             return con;
 
         }

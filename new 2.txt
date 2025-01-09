@@ -1,0 +1,1302 @@
+
+         {
+             sqlStatement("update TblProduct1 set qty = (qty - " + int.Parse(txtQty.Text) + ") where pcode like '" + txtPcode.Text + "'");
+         } 
+         {
+             sqlStatement("update TblProduct1 set qty = (qty + " + int.Parse(txtQty.Text) + ") where pcode like '" + txtPcode.Text + "'");
+         }
+
+         sqlStatement("insert into tblAdjustment (referenceno, pcode, qty, action, remarks, sdate ,[user])values('" + txtRef.Text + "', '" + txtPcode.Text + "','" + int.Parse(txtQty.Text) + "','" + cbCommands.Text + "','" + txtRemarks.Text + "','" + DateTime.Now.ToShortDateString()+"','"+txtUser.Text+"')");
+         MessageBox.Show("Stock has been successfully Adjusted","Process completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+         LoadRecords();
+         Clear();
+    
+  public void LoadRecords()
+ {
+     int i = 0;
+     dataGridView1.Rows.Clear();
+     cn.Open();
+     cm = new SqlCommand("select p.pcode,p.barcode,p.pdesc,b.brand,c.category,p.price,p.qty from TblProduct1 as p inner join BrandTbl as b on b.id = p.bid inner join TblCatecory as c on c.id = p.cid where p.pdesc like '" + txtSearch.Text + "%'", cn);
+     dr = cm.ExecuteReader();
+     while (dr.Read())
+     {
+         i++;
+         dataGridView1.Rows.Add(i, dr[0].ToString(), dr[1].ToString(), dr[2].ToString(), dr[3].ToString(), dr[4].ToString(), dr[5].ToString(), dr[6].ToString());
+     }
+     dr.Close();
+     cn.Close();
+ }
+  public void NotifyCriticalItems()
+ {
+     string critical = "";
+     cn.Open();
+     cm = new SqlCommand("select count(*) from vwCriticalItems", cn);
+     string count = cm.ExecuteScalar().ToString();
+     cn.Close();
+
+
+     int i = 0;
+     cn.Open();
+     cm = new SqlCommand("select * from vwCriticalItems", cn);
+     dr = cm.ExecuteReader();
+     while (dr.Read())
+     {
+         i++;
+         critical += i +". "  +  dr["pdesc"].ToString() + Environment.NewLine;
+     }        
+ }
+ 
+            cn.Open();
+            cm = new SqlCommand("INSERT INTo BrandTbl(Brand)VALUEs(@brand)", cn);
+            cm.Parameters.AddWithValue("@brand", txtBrand.Text);
+            cm.ExecuteNonQuery();
+            cn.Close();
+            MessageBox.Show("Record has been successfully saved.");
+            Clear();
+            frmlist.LoadRecords();
+
+            cn.Open();
+            cm = new SqlCommand("update BrandTbl set brand =@brand where id like '" + lblId.Text + "'", cn);
+            cm.Parameters.AddWithValue("@brand", txtBrand.Text);          
+ 
+             cm = new SqlCommand("INSERT into TblCatecory (category) VALUES(@category)", cn);
+             cm.Parameters.AddWithValue("@category", txtcategory.Text);
+             cm.ExecuteNonQuery();           
+ 
+              cm = new SqlCommand("UPDATE TblCatecory set category = @category where id like '" + lblId.Text + "' ", cn);
+              cm.Parameters.AddWithValue("@category", txtcategory.Text);
+              cm.ExecuteNonQuery();
+              cn.Close();
+              MessageBox.Show("Record has been successfully updated!");
+              flist.LoadCategory();
+              this.Dispose();       
+   private void btnSave_Click(object sender, EventArgs e)
+ {   
+                 cn.Open();
+                 cm = new SqlCommand("Update tblUser set password =@password where username =@username", cn);
+                 cm.Parameters.AddWithValue("@password", txtNew.Text);
+                 cm.Parameters.AddWithValue("@username", f.LblUser.Text);
+                 cm.ExecuteNonQuery();
+                 cn.Close();
+                 MessageBox.Show("Password has been successfully saved!", "Save Password!", MessageBoxButtons.OK, MessageBoxIcon.Information);           
+    cn.Open();
+    SqlDataAdapter da = new SqlDataAdapter("select month(sdate) as month, isnull(sum(total), 0.0) as total from tblCart1 where status like 'Sold' group by Month(sdate)", cn);
+    DataSet ds =new DataSet();
+    cn.Close();
+             cn.Open();
+             cm = new SqlCommand("update tblCart1 set disc= @disc, disc_precent= @disc_precent where id =@id", cn);
+             cm.Parameters.AddWithValue("@disc", Double.Parse(txtAmount.Text));
+             cm.Parameters.AddWithValue("@disc_precent", Double.Parse(txtDiscount.Text));
+             cm.Parameters.AddWithValue("@id", int.Parse(lblID.Text));
+            
+             cm.ExecuteNonQuery();
+             cn.Close();
+             f.LoadCart();
+             this.Dispose();       
+         cn.Open();
+         da.SelectCommand = new SqlCommand("select p.pcode , p.barcode, p.pdesc,b.brand,c.category , p.price, p.qty, p.reorder from TblProduct1 as p inner join BrandTbl as b on p.bid=b.id inner join TblCatecory as c on p.cid = c.id", cn);
+         da.Fill(ds.Tables["dtInventory"]);
+         cn.Close();
+     cm = new SqlCommand("select p.pcode,p.barcode,p.pdesc,b.brand,c.category,p.price,p.qty from TblProduct1 as p inner join BrandTbl as b on b.id = p.bid inner join TblCatecory as c on c.id = p.cid where p.pdesc like '" + txtSearch.Text + "%'", cn);
+     dr = cm.ExecuteReader();   
+    private void frmPOS_Load(object sender, EventArgs e)
+    {
+        timer1.Start();
+        cn.Open();
+        cm = new SqlCommand("select * from tblStore", cn);
+        dr = cm.ExecuteReader();
+        dr.Read();
+        if (dr.HasRows)
+        {
+           
+            lblAddress.Text = dr["address"].ToString();
+            lblSname.Text = dr["store"].ToString();
+            lblPhone.Text = dr["phone"].ToString();
+      
+        double discount = Double.Parse(lblDiscount.Text);
+        double subTot = Double.Parse(lblTotal.Text);
+        double sales = Double.Parse(lblTotal.Text) - discount; 
+        double vat = sales * dbcon.GetVal();
+        double vatble = sales - vat;
+        lblDisplayTotal.Text = vatble.ToString("#,##0.00");
+      //  lblTotal.Text = sales.ToString("#,000.00");
+        lblVat.Text = vat.ToString("#,##0.00");
+        lblVatable.Text = vatble.ToString("#,##0.00");
+        string critical = "";
+        cn.Open();
+        cm = new SqlCommand("select count(*) from vwCriticalItems", cn);
+        string count = cm.ExecuteScalar().ToString();
+        cn.Close();
+
+
+        int i = 0;
+        cn.Open();
+        cm = new SqlCommand("select * from vwCriticalItems", cn);
+        dr = cm.ExecuteReader();
+        while (dr.Read())         
+                cn.Open();
+                cm = new SqlCommand("delete from tblCart1 where id like '" + dataGridView1.Rows[e.RowIndex].Cells[1].Value.ToString() + "'", cn);
+                cm.ExecuteNonQuery();
+                cn.Close();
+                MessageBox.Show("Item Remove Successfully", stitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                LoadCart();          
+            cm = new SqlCommand("select sum(qty) as qty from TblProduct1 where  pcode like'" + dataGridView1.Rows[e.RowIndex].Cells[2].Value.ToString() + "' group by pcode", cn);
+            i = int.Parse(cm.ExecuteScalar().ToString());
+            cn.Close();
+
+            if (int.Parse(dataGridView1.Rows[e.RowIndex].Cells[5].Value.ToString()) < i)
+            {
+
+                cn.Open(); cm = new SqlCommand("update tblCart1 set qty = qty +" + int.Parse(txtQty.Text) + " where transno like '" + lblTransno.Text + "' and pcode like '" + dataGridView1.Rows[e.RowIndex].Cells[2].Value.ToString() + "'", cn);
+                cm.ExecuteNonQuery();
+                cn.Close();
+            int i = 0;
+            cn.Open();
+            cm = new SqlCommand("select sum(qty) as qty from tblCart1 where  pcode like'" + dataGridView1.Rows[e.RowIndex].Cells[2].Value.ToString() + "' and transno like '" + lblTransno.Text + "' group by transno, pcode", cn);
+            i = int.Parse(cm.ExecuteScalar().ToString());
+            cn.Close();
+                cn.Open(); cm = new SqlCommand("update tblCart1 set qty = qty  - " + int.Parse(txtQty.Text) + " where transno like '" + lblTransno.Text + "' and pcode like '" + dataGridView1.Rows[e.RowIndex].Cells[2].Value.ToString() + "'", cn);
+                cm.ExecuteNonQuery();
+                cn.Close();
+    {
+        try
+        {
+            string sdate = DateTime.Now.ToString("yyyyMMdd");
+            string transno;
+            int count;
+            cn.Open();
+            cm = new SqlCommand("select top 1 transno from tblCart1 where transno like '" + sdate + "%' order by id desc", cn);
+            dr = cm.ExecuteReader();
+            dr.Read();
+            if (dr.HasRows)
+            {
+                transno = dr[0].ToString();
+                count = int.Parse(transno.Substring(8, 4));
+                lblTransno.Text = sdate + (count + 1);
+            }
+            else
+            {
+                transno = sdate + "1001"; lblTransno.Text = transno;
+            }      
+                cm = new SqlCommand("select * from TblProduct1 where barcode like '" + txtSearch.Text + "'", cn);
+                dr = cm.ExecuteReader();
+                dr.Read();
+                if (dr.HasRows)
+                {
+                    qty = int.Parse(dr["qty"].ToString());
+                    _pcode = dr["pcode"].ToString();
+                    _price = double.Parse(dr["price"].ToString());
+                    _qty = int.Parse(txtQty.Text);
+
+                    dr.Close();
+                    cn.Close();
+                    AddToCart(_pcode, _price, _qty);
+            double total = 0;
+            double discount = 0;
+            cn.Open();
+            cm= new SqlCommand("select c.id, c.pcode,p.pdesc,c.price,c.qty,c.disc,c.total from tblCart1 as c inner join  TblProduct1 as p on c.pcode = p.pcode where transno like '" + lblTransno.Text + "'and status like 'pending'", cn);
+            dr = cm.ExecuteReader();
+            while (dr.Read())
+            {
+                i++;
+                total += Double.Parse(dr["total"].ToString());
+                discount += Double.Parse(dr["disc"].ToString());
+                dataGridView1.Rows.Add(i,dr["id"].ToString(),dr["pcode"].ToString(),dr["pdesc"].ToString(),dr["price"].ToString(),dr["qty"].ToString(),dr["disc"].ToString(),Double.Parse(dr["total"].ToString()).ToString("#,##0.00"));
+                hasrecord = true;
+        cm = new SqlCommand("select * from tblCart1 where transno = @transno and pcode = @pcode", cn);
+        cm.Parameters.AddWithValue("@transno",lblTransno.Text);
+        cm.Parameters.AddWithValue("@pcode", _pcode);
+        dr = cm.ExecuteReader();
+        dr.Read();
+        if (dr.HasRows)
+        {
+            found = true;
+            id = dr["id"].ToString();
+            cart_qty = int.Parse(dr["qty"].ToString());
+        }
+        else { found = false; }
+        dr.Close();
+        cn.Close();
+
+        if (found == true)
+        {
+            if (qty < (int.Parse(txtQty.Text) + cart_qty))
+            {
+                MessageBox.Show("Unable to proceed. Remaning qty on hand is " + qty, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            cn.Open();
+            cm = new SqlCommand("update tblCart1  set qty =  (qty+ " +_qty+ ")  where id= '" + id + "'", cn);
+
+            cm.ExecuteNonQuery();
+            cn.Close();
+
+            txtSearch.SelectionStart = 0;
+            txtSearch.SelectionLength = txtSearch.Text.Length;
+           LoadCart();
+            this.Dispose();
+        }
+        else
+        {
+            if (qty < int.Parse(txtQty.Text))
+            {
+                MessageBox.Show("Unable to proceed. Remaning qty on hand is " + qty, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            cn.Open();
+            cm = new SqlCommand("insert into tblCart1 (transno,pcode,price,qty,sdate,cashier) values (@transno ,@pcode, @price ,@qty, @sdate, @cashier)", cn);
+            cm.Parameters.AddWithValue("@transno", lblTransno.Text);
+            cm.Parameters.AddWithValue("@pcode", _pcode);
+            cm.Parameters.AddWithValue("@price", _price);
+            cm.Parameters.AddWithValue("@qty", _qty);
+            cm.Parameters.AddWithValue("@sdate", DateTime.Now);
+            cm.Parameters.AddWithValue("@cashier",LblUser.Text);
+            cm.ExecuteNonQuery();
+            cn.Close();
+   
+         cn.Open();
+         cm = new SqlCommand("delete from tblCart1 where transno like '" + lblTransno.Text + "'", cn);
+         cm.ExecuteNonQuery();
+         cn.Close();
+         MessageBox.Show("All items has been successfully remove!", "Remove", MessageBoxButtons.OK, MessageBoxIcon.Information);
+         LoadCart();
+     }
+ }
+             cm = new SqlCommand("select id from BrandTbl where brand like '" + comboBox1.Text + "'", cn);
+             dr = cm.ExecuteReader();
+             dr.Read();
+             if (dr.HasRows) { bid = dr[0].ToString(); }
+             dr.Close();
+             cn.Close();
+
+             cn.Open();
+             cm = new SqlCommand("select id from TblCatecory where category like '" + comboBox2.Text + "'", cn);
+             dr = cm.ExecuteReader();
+             dr.Read();
+             if (dr.HasRows) { cid = dr[0].ToString(); }
+             dr.Close();
+             cn.Close();
+
+
+
+             cn.Open();
+             cm = new SqlCommand("INSERT INTO TblProduct1 (pcode,barcode,pdesc,bid,cid,price,reorder) VALUES(@pcode,@barcode,@pdesc,@bid,@cid,@price,@reorder)", cn);
+             cm.Parameters.AddWithValue("@pcode", TxtPcode.Text);
+             cm.Parameters.AddWithValue("@barcode", txtBarcode.Text);
+             cm.Parameters.AddWithValue("@pdesc", txtPdesc.Text);
+             cm.Parameters.AddWithValue("@bid", bid);
+             cm.Parameters.AddWithValue("@cid", cid);
+             cm.Parameters.AddWithValue("@price",double.Parse( txtPrice.Text));
+             cm.Parameters.AddWithValue("@reorder",int.Parse( txtReOrder.Text));
+             cm.ExecuteNonQuery();
+             cn.Close();
+             MessageBox.Show("Product has been successfully saved");
+             Clear();
+             flist.LoadRecords();
+ private void btnUpdate_Click(object sender, EventArgs e)
+{
+    try
+    {
+        if (MessageBox.Show("Are you sure you want to update this product?", "Save product", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+        {
+            string bid = ""; string cid = "";
+            cn.Open();
+            cm = new SqlCommand("select id from BrandTbl where brand like '" + comboBox1.Text + "'", cn);
+            dr = cm.ExecuteReader();
+            dr.Read();
+            if (dr.HasRows)
+            {
+                bid = dr[0].ToString();
+            }
+            dr.Close();
+            cn.Close();
+
+            cn.Open();
+            cm = new SqlCommand("select id from TblCatecory where category like '" + comboBox2.Text + "'", cn);
+            dr = cm.ExecuteReader();
+            dr.Read();
+            if (dr.HasRows) { cid = dr[0].ToString(); }
+            dr.Close();
+            cn.Close();
+
+            cn.Open();
+            cm = new SqlCommand("UPDATE TblProduct1 SET barcode = @barcode,pdesc=@pdesc,bid=@bid,cid=@cid,price=@price,reorder=@reorder where pcode like @pcode", cn);
+            cm.Parameters.AddWithValue("@pcode", TxtPcode.Text);
+            cm.Parameters.AddWithValue("@barcode", txtBarcode.Text);
+            cm.Parameters.AddWithValue("@pdesc", txtPdesc.Text);
+            cm.Parameters.AddWithValue("@bid", bid);
+            cm.Parameters.AddWithValue("@cid", cid);
+            cm.Parameters.AddWithValue("@price",double.Parse(txtPrice.Text));
+            cm.Parameters.AddWithValue("@reorder",int.Parse(txtReOrder .Text));
+            cm.ExecuteNonQuery();
+            cn.Close();
+            MessageBox.Show("Product has been successfully updated.");
+            Clear1();
+            flist.LoadRecords();
+            this.Dispose();
+
+        }
+    }
+    catch (Exception ex)
+    {
+        cn.Close();
+        MessageBox.Show(ex.Message);
+    }
+}
+
+
+ public void LoadRecords()
+ {
+     int i = 0;
+
+     cn.Open();
+     dataGridView1.Rows.Clear();
+     if(cdTopSelling.Text =="Short by Qty")
+     {
+         cm = new SqlCommand("select top 10 pcode, pdesc,isnull(sum(qty),0) as qty, isnull(sum(total),0) as total from vwSoldItems where sdate between '" + dateTimePicker1.Value.ToString() + "' and '" + dateTimePicker2.Value.ToString() + "' and status like 'sold' group by pcode,pdesc order by qty desc", cn);
+
+     }
+     else if(cdTopSelling.Text =="Short by Total Amount")
+     {
+         cm = new SqlCommand("select top 10 pcode, pdesc,isnull(sum(qty),0) as qty, isnull(sum(total),0) as total from vwSoldItems where sdate between '" + dateTimePicker1.Value.ToString() + "' and '" + dateTimePicker2.Value.ToString() + "' and status like 'sold' group by pcode,pdesc order by total desc", cn);
+     }
+   
+     dr = cm.ExecuteReader();
+     while (dr.Read())
+     {
+         i++;
+         dataGridView1.Rows.Add(i, dr["pcode"].ToString(), dr["pdesc"].ToString(), dr["qty"].ToString(), Double.Parse(dr["total"].ToString()).ToString("#,##0.00")); 
+     }
+     dr.Close();
+     cn.Close();
+ }
+
+ private void btnLoad_Click(object sender, EventArgs e)
+ {
+     LoadRecords();
+ }
+
+ private void panel1_Paint(object sender, PaintEventArgs e)
+ {
+   
+ }
+
+ private void button1_Click(object sender, EventArgs e)
+ {
+     try
+     {
+
+         dataGridView2.Rows.Clear();
+         int i = 0;
+         cn.Open();
+         cm = new SqlCommand("select c.pcode, p.pdesc, c.price, sum (c.qty) as tot_qty, sum (c.disc) as tot_disc, sum (c.total) as total  from tblCart1 as c inner join TblProduct1 as p on c.pcode = p.pcode where status like 'Sold' and sdate between '" + dateTimePicker4.Value.ToString() + "' and '" + dateTimePicker3.Value.ToString() + "'  group by c.pcode, p.pdesc, c.price", cn);
+         dr = cm.ExecuteReader();
+         while (dr.Read())
+         {
+             i++;
+             dataGridView2.Rows.Add(i, dr["pcode"].ToString(), dr["pdesc"].ToString(), Double.Parse(dr["price"].ToString()).ToString("#,##0.00"), dr["tot_qty"].ToString(), dr["tot_disc"].ToString(),Double.Parse( dr["total"].ToString()).ToString("#,##0.00"));
+         }
+         dr.Close();
+         cn.Close();
+
+         cn.Open();
+         cm = new SqlCommand("select isnull(sum (total),0) from tblCart1  where status like 'Sold' and sdate between '" + dateTimePicker4.Value.ToString() + "' and '" + dateTimePicker3.Value.ToString() + "'", cn);
+         lblTotal.Text = Double.Parse(cm.ExecuteScalar().ToString()).ToString("#,##0.00");
+         cn.Close();
+     }
+     catch (Exception ex)
+     {
+         cn.Close();
+         MessageBox.Show(ex.Message, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+     }
+ }
+
+ private void dataGridView3_CellContentClick(object sender, DataGridViewCellEventArgs e)
+ {
+
+ }
+ public void LoadCriticalItems()
+ {
+     try
+     {
+         dataGridView3.Rows.Clear();
+         int i = 0;
+         cn.Open();
+         cm = new SqlCommand("select * from vwCriticalItems",cn);
+         dr = cm.ExecuteReader();
+         while(dr.Read())
+         {
+             i++;
+             dataGridView3.Rows.Add(i, dr[0].ToString(), dr[1].ToString(), dr[2].ToString(), dr[3].ToString(), dr[4].ToString(), dr[5].ToString(),dr[6].ToString(), dr[7].ToString());
+         }
+         dr.Close();
+         cn.Close();
+
+     }catch(Exception ex)
+     {
+         cn.Close();
+         MessageBox.Show(ex.Message,"Warning",MessageBoxButtons.OK,MessageBoxIcon.Warning);
+     }
+ }
+ public void LoadInventory()
+ {
+     int i = 0;
+     dataGridView4.Rows.Clear();
+     cn.Open();
+     cm = new SqlCommand("select p.pcode , p.barcode, p.pdesc,b.brand,c.category , p.price, p.qty, p.reorder from TblProduct1 as p inner join BrandTbl as b on p.bid=b.id inner join TblCatecory as c on p.cid = c.id", cn);
+     dr = cm.ExecuteReader();
+     while (dr.Read())
+     {
+         i++;
+         dataGridView4.Rows.Add(i, dr["pcode"].ToString(), dr["barcode"].ToString(), dr["pdesc"].ToString(), dr["brand"].ToString(), dr["category"].ToString(), dr["price"].ToString(), dr["reorder"].ToString(), dr["qty"].ToString());
+     }
+     dr.Close();
+     cn.Close();
+ }
+
+ private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+ {
+     frmInventoryReport frm = new frmInventoryReport();
+     frm.LoadReport();
+     frm.ShowDialog();
+ }
+
+ private void dataGridView4_CellContentClick(object sender, DataGridViewCellEventArgs e)
+ {
+
+ }
+
+ private void dataGridView5_CellContentClick(object sender, DataGridViewCellEventArgs e)
+ {
+
+ }
+ public void CancelledOrder()
+ {
+     int i = 0;
+     dataGridView5.Rows.Clear();
+     cn.Open();
+     cm = new SqlCommand("select * from vwCancelledOrder where sdate between '" + dateTimePicker5.Value.ToString() + "' and '" + dateTimePicker6.Value.ToString() + "'", cn);
+     dr = cm.ExecuteReader();
+     while (dr.Read())
+     {
+         i++;
+         dataGridView5.Rows.Add(i, dr["transno"].ToString(), dr["pcode"].ToString(), dr["pdesc"].ToString(), dr["price"].ToString(), dr["qty"].ToString(), dr["total"].ToString(), dr["sdate"].ToString(), dr["voidby"].ToString(), dr["cancelledby"].ToString(),dr["reason"].ToString(), dr["action"].ToString());
+     }
+     dr.Close();
+     cn.Close();
+ }
+
+ private void button2_Click(object sender, EventArgs e)
+ {
+    
+ }
+public void LoadStockHistory()
+ {
+     int i = 0;
+     dataGridView6.Rows.Clear();
+     cn.Open();
+     cm = new SqlCommand("select * from vwStockin where cast(sdate as date) between '" + dateTimePicker8.Value.ToString() + "' and '" + dateTimePicker7.Value.ToString()+ "' and status like 'Done'", cn);
+     dr = cm.ExecuteReader();
+     while (dr.Read())
+     {
+         i++;
+         dataGridView6.Rows.Add(i, dr[0].ToString(), dr[1].ToString(), dr[2].ToString(), dr[3].ToString(), dr[4].ToString(), dr[5].ToString(), dr[6].ToString());
+     }
+     dr.Close();
+     cn.Close();
+
+ }
+
+ private void tabPage6_Click(object sender, EventArgs e)
+ {
+
+ }
+
+ private void button3_Click(object sender, EventArgs e)
+ {
+     
+ }
+
+ private void linkLabel4_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+ {
+     frmInventoryReport f = new frmInventoryReport();
+     if (cdTopSelling.Text == "Short by Qty")
+     {
+         f.LoadTopSelling("select top 10 pcode, pdesc, sum(qty) as qty, isnull(sum(total),0) as total from vwSoldItems where sdate between '" + dateTimePicker1.Value.ToString() + "' and '" + dateTimePicker2.Value.ToString() + "' and status like 'sold' group by pcode,pdesc order by qty desc" , "From : " + dateTimePicker1.Value.ToString() + " To : " + dateTimePicker2.Value.ToString(),"TOP SELLING ITEMS SHORT BY QTY");
+
+     }
+     else if (cdTopSelling.Text == "Short by Total Amount")
+     {
+        // cm = new SqlCommand("select top 10 pcode, pdesc,isnull(sum(qty),0) as qty, isnull(sum(total),0) as total from vwSoldItems where sdate between '" + dateTimePicker1.Value.ToString() + "' and '" + dateTimePicker2.Value.ToString() + "' and status like 'sold' group by pcode,pdesc order by total desc", cn);
+         f.LoadTopSelling("select top 10 pcode, pdesc,isnull(sum(qty),0) as qty ,isnull(sum(total),0) as total from vwSoldItems where sdate between '" + dateTimePicker1.Value.ToString() + "' and '" + dateTimePicker2.Value.ToString() + "' and status like 'Sold' group by pcode ,pdesc order by total desc", "From : " + dateTimePicker1.Value.ToString() + " To : " + dateTimePicker2.Value.ToString(), "TOP SELLING ITEMS SHORT BY TOTAL AMOUNT" );
+     }
+
+     f.ShowDialog();
+    
+ }
+
+ private void linkLabel3_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+ {
+     frmInventoryReport f = new frmInventoryReport();
+     f.LoadSoldItems("select c.pcode, p.pdesc, c.price, sum (c.qty) as tot_qty, sum (c.disc) as tot_disc, sum (c.total) as total  from tblCart1 as c inner join TblProduct1 as p on c.pcode = p.pcode where status like 'Sold' and sdate between '" + dateTimePicker4.Value.ToString() + "' and '" + dateTimePicker3.Value.ToString() + "'  group by c.pcode, p.pdesc, c.price", " From : " + dateTimePicker4.Value.ToString() + " To : " + dateTimePicker3.Value.ToString());
+     f.ShowDialog();
+ }
+
+ private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+ {
+
+ }
+
+ private void linkLabel5_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+ {
+     if(cdTopSelling.Text == String.Empty)
+     {
+         MessageBox.Show("Please select from the dropdown list.","Warning",MessageBoxButtons.OK,MessageBoxIcon.Exclamation);
+         return;
+     }
+     LoadRecords();
+     LoadChart();
+ }
+
+ private void cdTopSelling_KeyPress(object sender, KeyPressEventArgs e)
+ {
+     e.Handled = true;
+ }
+ public void LoadChart()
+ {
+     SqlDataAdapter da = new SqlDataAdapter();
+     cn.Open();
+     if (cdTopSelling.Text == "Short by Qty")
+     {
+        da = new SqlDataAdapter("select top 10 pcode,isnull(sum(qty),0) as qty from vwSoldItems where sdate between '" + dateTimePicker1.Value.ToString() + "' and '" + dateTimePicker2.Value.ToString() + "' and status like 'sold' group by pcode order by qty desc", cn);
+
+     }
+     else if (cdTopSelling.Text == "Short by Total Amount")
+     {
+      da= new SqlDataAdapter("select top 10 pcode, isnull(sum(total),0) as total from vwSoldItems where sdate between '" + dateTimePicker1.Value.ToString() + "' and '" + dateTimePicker2.Value.ToString() + "' and status like 'sold' group by pcode order by total desc", cn);
+     }
+     DataSet ds = new DataSet();
+      da.Fill(ds, "TOPSELLING");
+     chart1.DataSource = ds.Tables["TOPSELLING"];
+     Series series = chart1.Series[0];
+     series.ChartType = SeriesChartType.Doughnut;
+
+
+     series.Name = "TOP SELLING";
+     var chart = chart1;
+     chart.Series[0].XValueMember = "pcode";
+     if (cdTopSelling.Text == "Short by Qty") { chart.Series[0].YValueMembers ="qty"; }
+     if (cdTopSelling.Text == "Short by Total Amount") { chart.Series[0].YValueMembers = "total"; }
+     chart.Series[0].IsValueShownAsLabel = true;
+      if (cdTopSelling.Text == "Short by Total Amount") { chart.Series[0].LabelFormat = ("#,##0.00"); }
+     if (cdTopSelling.Text == "Short by Qty") { chart.Series[0].LabelFormat = ("#,##0.00"); }
+     cn.Close();
+ }
+
+ private void linkLabel6_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+ {
+     try
+     {
+
+         dataGridView2.Rows.Clear();
+         int i = 0;
+         cn.Open();
+         cm = new SqlCommand("select c.pcode, p.pdesc, c.price, sum (c.qty) as tot_qty, sum (c.disc) as tot_disc, sum (c.total) as total  from tblCart1 as c inner join TblProduct1 as p on c.pcode = p.pcode where status like 'Sold' and sdate between '" + dateTimePicker4.Value.ToString() + "' and '" + dateTimePicker3.Value.ToString() + "'  group by c.pcode, p.pdesc, c.price", cn);
+         dr = cm.ExecuteReader();
+         while (dr.Read())
+         {
+             i++;
+             dataGridView2.Rows.Add(i, dr["pcode"].ToString(), dr["pdesc"].ToString(), Double.Parse(dr["price"].ToString()).ToString("#,##0.00"), dr["tot_qty"].ToString(), dr["tot_disc"].ToString(), Double.Parse(dr["total"].ToString()).ToString("#,##0.00"));
+         }
+         dr.Close();
+         cn.Close();
+
+         cn.Open();
+         cm = new SqlCommand("select isnull(sum (total),0) from tblCart1  where status like 'Sold' and sdate between '" + dateTimePicker4.Value.ToString() + "' and '" + dateTimePicker3.Value.ToString() + "'", cn);
+         lblTotal.Text = Double.Parse(cm.ExecuteScalar().ToString()).ToString("#,##0.00");
+         cn.Close();
+     }
+     catch (Exception ex)
+     {
+         cn.Close();
+         MessageBox.Show(ex.Message, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+     }
+ }
+
+ private void linkLabel7_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+ {
+     frmCharts f = new frmCharts();
+     f.lblTitel.Text = "Sold Items [" + dateTimePicker1.Value.ToShortDateString() + " - " + dateTimePicker4.Value.ToShortDateString() + "]";
+     f.LoadCardSold("select p.pdesc, sum (c.total) as total  from tblCart1 as c inner join TblProduct1 as p on c.pcode = p.pcode where status like 'Sold' and sdate between '" + dateTimePicker4.Value.ToString() + "' and '" + dateTimePicker3.Value.ToString() + "'  group by p.pdesc order by total desc");
+         f.ShowDialog();
+ }
+
+ private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+ {
+     frmInventoryReport frm = new frmInventoryReport();
+     string param = "Date Convered: " + dateTimePicker8.Value.ToShortDateString() + " - " + dateTimePicker7.Value.ToShortDateString();
+     frm.LoadStockReport("select * from vwStockin where cast(sdate as date) between '" + dateTimePicker8.Value.ToShortDateString() + "' and '" + dateTimePicker7.Value.ToShortDateString() + "' and status like 'Done'",param);
+     frm.ShowDialog();
+    
+ }
+
+ private void linkLabel8_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+ {
+     LoadStockHistory();
+ }
+
+ private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+ {
+
+ }
+
+ private void linkLabel9_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+ {
+     CancelledOrder();
+ }
+
+ private void linkLabel10_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+ {
+     frmInventoryReport f = new frmInventoryReport();
+     string param = "Date coverd: "+ dateTimePicker5.Value.ToString() + " - " + dateTimePicker6.Value.ToString()  ;
+     f.LoadCancelReport("select * from vwCancelledOrder where sdate between '" + dateTimePicker5.Value.ToString() + "' and '" + dateTimePicker6.Value.ToString() + "'", param);
+     f.ShowDialog();
+ }
+ 
+  public void LoadReport()
+ {
+     try
+     {
+         ReportDataSource rptDS;
+
+
+         this.reportViewer1.LocalReport.ReportPath = Application.StartupPath + @"\Bill\Report2.rdlc";
+         this.reportViewer1.LocalReport.DataSources.Clear();
+
+         DataSet1 ds = new DataSet1();
+         SqlDataAdapter da = new SqlDataAdapter();
+
+         cn.Open();
+         if (f.cbCashier.Text == "All Cashier") { da.SelectCommand = new SqlCommand("select c.id, c.transno, c.pcode, p.pdesc, c.price, c.qty, c.disc as discount, total from tblCart1 as c inner join TblProduct1 as p on c.pcode = p.pcode where status like 'sold' and sdate between '" + f.dateTimePicker1.Value + "' and '" + f.dateTimePicker2.Value +  "'", cn); }
+         else { da.SelectCommand = new SqlCommand("select c.id, c.transno, c.pcode, p.pdesc, c.price, c.qty, c.disc as discount, total from tblCart1 as c inner join TblProduct1 as p on c.pcode = p.pcode where status like 'sold' and sdate between '" + f.dateTimePicker1.Value + "' and '" + f.dateTimePicker2.Value + "'and cashier like '" + f.cbCashier.Text + "'", cn); }
+         da.Fill(ds.Tables["dtSoldReport"]);
+         cn.Close();
+         ReportParameter pDate = new ReportParameter("pDate", "Date From: " + f.dateTimePicker1.Value.ToShortDateString() + " To " + f.dateTimePicker2.Value.ToShortDateString());
+         ReportParameter pCashier = new ReportParameter("pCashier", "Cashier: " + f.cbCashier.Text);
+         ReportParameter pHeder = new ReportParameter("pHeder", "SALES REPORT");
+
+         reportViewer1.LocalReport.SetParameters(pDate);
+         reportViewer1.LocalReport.SetParameters(pCashier);
+     
+         reportViewer1.LocalReport.SetParameters(pHeder);
+         rptDS = new ReportDataSource("DataSet1", ds.Tables["dtSoldReport"]);
+         reportViewer1.LocalReport.DataSources.Add(rptDS);
+         reportViewer1.SetDisplayMode(Microsoft.Reporting.WinForms.DisplayMode.PrintLayout);
+         reportViewer1.ZoomMode = ZoomMode.Percent;
+         reportViewer1.ZoomPercent = 100;
+
+     }
+     catch (Exception ex)
+     {
+         cn.Close();
+         MessageBox.Show(ex.Message);
+     }
+ }
+ public void LoadReport(string pcash, string pchange)
+{
+    ReportDataSource rtpDataSource;
+    try
+    {
+        LocalReport report = new LocalReport();
+        this.reportViewer1.LocalReport.ReportPath = Application.StartupPath + @"\Bill\Report1.rdlc";
+        this.reportViewer1.LocalReport.DataSources.Clear();
+        
+
+
+
+        DataSet1 ds = new DataSet1();
+        SqlDataAdapter da = new SqlDataAdapter();
+
+        cn.Open();
+        da.SelectCommand = new SqlCommand("select c.id, c.transno, c.pcode, c.price, c.qty, c.disc, c.total, c.sdate, c.status , p.pdesc from tblCart1 as c inner join TblProduct1 as p on p.pcode = c.pcode where transno like '" + f.lblTransno.Text + "'", cn);
+        da.Fill(ds.Tables["dtSold"]);
+        cn.Close();
+
+        // ReportParameter pItems = new ReportParameter("pItems");
+        ReportParameter pPhone = new ReportParameter("pPhone", f.lblPhone.Text);
+        ReportParameter pTotal = new ReportParameter("pTotal", f.lblTotal.Text);
+        ReportParameter pCash = new ReportParameter("pCash", pcash);
+        ReportParameter pDiscount = new ReportParameter("pDiscount", f.lblDiscount.Text);
+        ReportParameter pChange = new ReportParameter("pChange", pchange);
+        ReportParameter pStore = new ReportParameter("pStore", f.lblSname.Text);
+        ReportParameter pAddress = new ReportParameter("pAddress", f.lblAddress.Text);
+        ReportParameter pTransaction = new ReportParameter("pTransaction", "Invoice #: " + f.lblTransno.Text);
+        ReportParameter pCashier = new ReportParameter("pCashier", f.LblUser.Text);
+
+        // reportViewer1.LocalReport.SetParameters(pItems);
+        reportViewer1.LocalReport.SetParameters(pDiscount);
+        reportViewer1.LocalReport.SetParameters(pPhone);
+        reportViewer1.LocalReport.SetParameters(pTotal);
+        reportViewer1.LocalReport.SetParameters(pCash);
+        reportViewer1.LocalReport.SetParameters(pChange);
+        reportViewer1.LocalReport.SetParameters(pStore);
+        reportViewer1.LocalReport.SetParameters(pAddress);
+        reportViewer1.LocalReport.SetParameters(pTransaction);
+        reportViewer1.LocalReport.SetParameters(pCashier);
+
+
+        rtpDataSource = new ReportDataSource("DataSet1", ds.Tables["dtSold"]);
+        reportViewer1.LocalReport.DataSources.Add(rtpDataSource);
+        reportViewer1.SetDisplayMode(Microsoft.Reporting.WinForms.DisplayMode.PrintLayout);
+        reportViewer1.ZoomMode = ZoomMode.Percent;
+        reportViewer1.ZoomPercent = 100;
+       // report.printToPrinter();
+
+
+
+    }
+    catch (Exception ex)
+    {
+        cn.Close();
+        MessageBox.Show(ex.Message);
+    }
+}
+
+ private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+ {
+     {
+         string ColName = dataGridView1.Columns[e.ColumnIndex].Name;
+         if (ColName == "colSelect")
+             if (slist.txtRefNo.Text == string.Empty) { MessageBox.Show("Please enter reference no", stitle, MessageBoxButtons.OK, MessageBoxIcon.Warning); slist.txtRefNo.Focus(); return; }
+         if (slist.txtBy.Text == string.Empty) { MessageBox.Show("Please enter Stock in by", stitle, MessageBoxButtons.OK, MessageBoxIcon.Warning); slist.txtBy.Focus(); return; }
+         {
+             if (MessageBox.Show("Add this item?", stitle, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+             {
+                 cn.Open();
+                 cm = new SqlCommand("insert into tblStockin (refno,pcode,sdate,stockinby,vendorid) values (@refno,@pcode,@sdate,@stockinby,@vendorid)", cn);
+                 cm.Parameters.AddWithValue("@refno", slist.txtRefNo.Text);
+                 cm.Parameters.AddWithValue("@pcode", dataGridView1.Rows[e.RowIndex].Cells[1].Value.ToString());
+                 cm.Parameters.AddWithValue("@stockinby", slist.txtBy.Text);
+                 cm.Parameters.AddWithValue("@sdate", slist.dt1.Value);
+                 cm.Parameters.AddWithValue("@vendorid", slist.lblVendorID.Text);
+                 cm.ExecuteNonQuery();
+                 cn.Close();
+
+                 MessageBox.Show("Successfully Add!", stitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                 slist.LoadStockIn();
+             }
+
+         }
+     }
+ }
+ public void LoadProduct()
+ {
+     int i = 0;
+     dataGridView1.Rows.Clear();
+     cn.Open();
+     cm = new SqlCommand("select pcode,pdesc,qty from TblProduct1 where pdesc like '%" + txtSearch.Text + "%' order by pdesc", cn);
+     dr = cm.ExecuteReader();
+     while (dr.Read())
+     {
+         i++;
+         dataGridView1.Rows.Add(i, dr[0].ToString(), dr[1].ToString(), dr[2].ToString());
+     }
+     dr.Close();
+     cn.Close();
+ }
+  private void btnEnter_Click(object sender, EventArgs e)
+ {
+     try
+     {
+         if ((double.Parse(txtChange.Text) < 0) || (txtChange.Text == String.Empty))
+         {
+             MessageBox.Show("Insufficient amount.Please enter the corrent amount!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+             return;
+         }
+         else
+         {
+             for (int i = 0; i < fpos.dataGridView1.Rows.Count; i++)
+             {
+                 cn.Open();
+                 cm = new SqlCommand("update TblProduct1 set qty = qty - " + int.Parse(fpos.dataGridView1.Rows[i].Cells[5].Value.ToString()) + " where pcode = '" + fpos.dataGridView1.Rows[i].Cells[2].Value.ToString() + "'", cn);
+                 cm.ExecuteNonQuery();
+                 cn.Close();
+
+                 cn.Open();
+                 cm = new SqlCommand("update tblCart1 set status = 'Sold' where id = '" + fpos.dataGridView1.Rows[i].Cells[1].Value.ToString() + "'", cn);
+                 cm.ExecuteNonQuery();
+                 cn.Close();
+             }
+             frmResipt frm = new frmResipt(fpos);
+             frm.LoadReport(txtCash.Text, txtChange.Text);
+             frm.ShowDialog();
+
+
+             MessageBox.Show("Payment successfully saved!", "Payment", MessageBoxButtons.OK, MessageBoxIcon.Information);
+             fpos.GetTransNo();
+             fpos.LoadCart();
+             this.Dispose();
+
+         }
+
+
+     }
+     catch (Exception ex)
+     {
+         MessageBox.Show("Insufficient amount.Please enter the correct amount!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+     }
+
+ }
+ public void LocalRecord()
+ {
+     int i = 0;
+     double _total = 0;
+     dataGridView1.Rows.Clear();
+     cn.Open();
+     if (cbCashier.Text == "All Cashier")  { cm = new SqlCommand("select c.id ,c.transno,c.pcode, p.pdesc, c.price ,c.qty, c.disc ,total from tblCart1 as c inner join TblProduct1 as p on c.pcode = p.pcode where status like 'sold' and sdate between '" + dateTimePicker1.Value + "' and '" + dateTimePicker2.Value + "'", cn); }
+     else { cm = new SqlCommand("select c.id ,c.transno,c.pcode, p.pdesc, c.price ,c.qty, c.disc ,total from tblCart1 as c inner join TblProduct1 as p on c.pcode = p.pcode where status like 'sold' and sdate between '" + dateTimePicker1.Value + "' and '" + dateTimePicker2.Value + "' and  Cashier like '" + cbCashier.Text+ "'", cn); }
+     dr = cm.ExecuteReader();
+     while (dr.Read())
+     {
+         i++;
+         _total += double.Parse(dr["total"].ToString());
+         dataGridView1.Rows.Add(i, dr["id"].ToString(), dr["transno"].ToString(), dr["pcode"].ToString(), dr["pdesc"].ToString(), dr["price"].ToString(), dr["qty"].ToString(), dr["disc"].ToString(), dr["total"].ToString());
+     }
+     dr.Close();
+     cn.Close();
+     lblTotal1.Text =_total.ToString("#,##0.00");
+ 
+ }
+ public void LoadCashier()
+ {
+     cbCashier.Items.Clear();
+     cbCashier.Items.Add("All Cashier");
+     cn.Open();
+     cm = new SqlCommand("Select * from tblUser where role like 'Cashier'", cn);
+     dr = cm.ExecuteReader();
+     while (dr.Read())
+     {
+         cbCashier.Items.Add(dr["name"].ToString());
+     }
+     dr.Close();
+     cn.Close();
+ }
+  public void LoadStockIn()
+ {
+     int i = 0;
+     dataGridView2.Rows.Clear();
+     cn.Open();
+     cm = new SqlCommand("select * from vwStockin where refno like '" + txtRefNo.Text + "' and status like 'Pending'", cn);
+     dr = cm.ExecuteReader();
+     while (dr.Read())
+     {
+         i++;
+         dataGridView2.Rows.Add(i, dr[0].ToString(), dr[1].ToString(), dr[2].ToString(), dr[3].ToString(), dr[4].ToString(), dr[5].ToString(), dr[6].ToString(), dr["vender"].ToString());
+     }
+     dr.Close();
+     cn.Close();
+
+ }
+ private void btnSave_Click(object sender, EventArgs e)
+ {
+     try
+     {
+         if (dataGridView2.Rows.Count > 0)
+         {
+             if (MessageBox.Show("Are you sure you want to save this record?", stitle, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes) { 
+                 for (int i = 0; i < dataGridView2.Rows.Count; i++)
+                 {
+                     // update product qty
+                     cn.Open();
+                     cm = new SqlCommand("update  TblProduct1 set qty = qty + " + int.Parse(dataGridView2.Rows[i].Cells[5].Value.ToString()) + " where pcode like '" + dataGridView2.Rows[i].Cells[3].Value.ToString() + "'", cn);
+                     cm.ExecuteNonQuery();
+                     cn.Close();
+
+                     // update stockin qty
+                     cn.Open();
+                     cm = new SqlCommand("update tblStockin set qty = qty +" + int.Parse(dataGridView2.Rows[i].Cells[5].Value.ToString()) + ",status = 'Done' where id like  '" + dataGridView2.Rows[i].Cells[1].Value.ToString() + "'", cn);
+                     cm.ExecuteNonQuery();
+                     cn.Close();
+                 }
+             Clear();
+             LoadStockIn();
+         }
+     }
+ }catch (Exception ex)
+     {
+         cn.Close();
+         MessageBox.Show(ex.Message, stitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+     }
+ }
+ private void LoadStockHistory()
+ {
+     int i = 0;
+     dataGridView1.Rows.Clear();
+     cn.Open();
+     cm = new SqlCommand("select * from vwStockin where cast(sdate as date) between '"+date1.Value.ToShortDateString()+"' and '"+date2.Value.ToShortDateString()+"' and status like 'Done'", cn);
+     dr = cm.ExecuteReader();
+     while (dr.Read())
+     {
+         i++;
+         dataGridView1.Rows.Add(i, dr[0].ToString(), dr[1].ToString(), dr[2].ToString(), dr[3].ToString(), dr[4].ToString(),DateTime .Parse(dr[5].ToString()).ToShortDateString(), dr[6].ToString(), dr["vender"].ToString());
+     }
+     dr.Close();
+     cn.Close();
+
+ }
+ public void LoadVendor()
+{
+    cbVendor.Items.Clear();
+    cn.Open();
+    cm = new SqlCommand("select * from tblVendor", cn);
+    dr = cm.ExecuteReader();
+    while (dr.Read())
+    {
+        cbVendor.Items.Add(dr["vender"].ToString());
+    }
+    dr.Close();
+    cn.Close();
+
+}
+ private void cbVendor_TextChanged(object sender, EventArgs e)
+ {
+     cn.Open();
+     cm = new SqlCommand("select * from tblVendor where vender like '"+cbVendor.Text+"'",cn);
+     dr = cm.ExecuteReader();
+     dr.Read();
+     if(dr.HasRows)
+     {
+         lblVendorID.Text = dr["id"].ToString();
+         txtAddress.Text = dr["address"].ToString();
+         txtPerson.Text = dr["contactperson"].ToString();
+     }
+     dr.Close();
+     cn.Close();
+ }
+ private void btnSave_Click(object sender, EventArgs e)
+{
+    try
+    {
+        if(MessageBox.Show("Save Store Deatils?","Confirm",MessageBoxButtons.YesNo,MessageBoxIcon.Question)== DialogResult .Yes)
+        {
+            {
+                int count;
+                cn.Open(); cm = new SqlCommand("select count (*) from tblStore", cn);
+                count = int.Parse(cm.ExecuteScalar().ToString());
+                cn.Close();
+               if(count > 0)
+                {
+                    cn.Open();
+                    cm = new SqlCommand("update tblStore set address =@address, phone =@phone, store =@store ", cn);
+                    cm.Parameters.AddWithValue("@store", txtStore.Text);
+                    cm.Parameters.AddWithValue("@address", txtAddress.Text);
+                    cm.Parameters.AddWithValue("@phone", txtPhone.Text);
+                    cm.ExecuteNonQuery();
+
+                }
+                else
+                {
+                    cn.Open();
+                    cm = new SqlCommand("insert into tblStore (store , address, phone) values (@store,@address,@phone)", cn);
+                    cm.Parameters.AddWithValue("@store", txtStore.Text);
+                    cm.Parameters.AddWithValue("@address", txtAddress.Text);
+                    cm.Parameters.AddWithValue("@phone", txtPhone.Text);
+                    cm.ExecuteNonQuery();
+                }
+                MessageBox.Show("Store Details has been successfully saved!", "Save Store", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            cn.Close();
+           
+        }
+
+    }catch(Exception ex)
+    {
+        cn.Close();
+        MessageBox.Show(ex.Message, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+    }
+}
+
+public void LoadRecord()
+{
+    cn.Open();
+    cm = new SqlCommand("select * from tblStore", cn);
+    dr = cm.ExecuteReader();
+    dr.Read();
+    if (dr.HasRows)
+    {
+        txtAddress.Text = dr["address"].ToString();
+        txtStore.Text = dr["store"].ToString();
+        txtPhone.Text = dr["phone"].ToString();
+
+    }
+    else
+    {
+        txtStore.Clear();
+        txtAddress.Clear();
+    }
+    dr.Close();
+    cn.Close();
+}
+ private void button1_Click(object sender, EventArgs e)
+ {
+     try
+     {
+         if (txtPassword.Text != txtRePassword.Text)
+         {
+             MessageBox.Show("Passowrd did not Math!","Error",MessageBoxButtons.OK,MessageBoxIcon.Warning);
+             return;
+         }
+         cn.Open();
+         cm = new SqlCommand("insert into tbluser (username,password,role,name) Values (@username,@password,@role,@name)",cn);
+         cm.Parameters.AddWithValue("@username", txtUser.Text);
+         cm.Parameters.AddWithValue("@password", txtPassword.Text);
+         cm.Parameters.AddWithValue("@role", cbRole.Text);
+         cm.Parameters.AddWithValue("@name", txtName.Text);
+         cm.ExecuteNonQuery();
+         cn.Close();MessageBox.Show("New Account has saved!");
+         Clear();
+
+
+
+     }catch (Exception ex)
+     {
+         cn.Close();
+         MessageBox.Show(ex.Message);
+
+     }
+ }
+ private void btnSav_Click(object sender, EventArgs e)
+{
+    try
+    {
+        if(txtOld.Text != f._pass)
+        {
+            MessageBox.Show("old password did not mached!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+        if (txtNew.Text != txtRePass.Text)
+        {
+            MessageBox.Show("Confirm new password did not mached!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        cn.Open();
+        cm = new SqlCommand("update tblUser set password = @password where username like @username", cn);
+        cm.Parameters.AddWithValue("@password", txtNew.Text);
+        cm.Parameters.AddWithValue("@username", txtU.Text);
+       
+        cm.ExecuteNonQuery();
+        cn.Close();
+        MessageBox.Show("Password has been successfully changed!", "Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
+      
+        txtRePass.Clear();
+        txtOld.Clear();
+        txtNew.Clear();
+    }
+    catch(Exception ex)
+    {
+        
+        MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+    }
+}
+
+private void txtuser2_TextChanged(object sender, EventArgs e)
+{
+    try
+    {
+        cn.Open();
+        cm = new SqlCommand("select * from tblUser where username =@username",cn);
+        cm.Parameters.AddWithValue("@username", txtuser2.Text);
+        dr = cm.ExecuteReader();
+        dr.Read();
+        if(dr.HasRows)
+        {
+            checkBox1.Checked = bool.Parse(dr["isactive"].ToString());
+        }else
+        {
+            checkBox1.Checked = false;
+        }
+        dr.Close();
+        cn.Close();
+
+    }catch(Exception ex)
+    {
+        cn.Close();
+        MessageBox.Show(ex.Message, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+    }
+}
+
+private void button2_Click(object sender, EventArgs e)
+{
+    try
+    {
+        bool found = true;
+        cn.Open();
+        cm = new SqlCommand("select * from tblUser where username =@username", cn);
+        cm.Parameters.AddWithValue("@username", txtuser2.Text);
+        dr = cm.ExecuteReader();
+        dr.Read();
+        if (dr.HasRows) { found = true;  }else { found = false; }
+        dr.Close();
+        cn.Close();
+
+        if (found == true)
+        {
+            cn.Open();
+            cm = new SqlCommand("update tblUser set isactive =@isactive where username =@username", cn);
+            cm.Parameters.AddWithValue("@isactive", checkBox1.Checked.ToString());
+            cm.Parameters.AddWithValue("@username", txtuser2.Text);
+            cm.ExecuteNonQuery();
+            cn.Close();
+            MessageBox.Show("Account status has been successfully updated", "Account", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            txtuser2.Clear();
+            checkBox1.Checked = false;
+        }
+        else
+        {
+            MessageBox.Show("Account not exists!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+    }catch (Exception ex)
+    {
+        cn.Close();
+        MessageBox.Show(ex.Message, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+    }
+}
+private void btnSave_Click(object sender, EventArgs e)
+
+{
+    string  _role ="", _name = "";
+    try
+    {
+        bool found = false;
+        cn.Open();
+        cm = new SqlCommand("select * from tblUser where username = @username and password = @password", cn);
+        cm.Parameters.AddWithValue("@username", txtUser.Text);
+        cm.Parameters.AddWithValue("@password", txtPass.Text);
+        dr = cm.ExecuteReader();
+        dr.Read();
+        if (dr.HasRows)
+        {
+            found = true;
+            _username = dr["username"].ToString();
+            _role = dr["role"].ToString();
+            _name = dr["name"].ToString();
+            _pass = dr["Password"].ToString();
+            _isactive = bool.Parse(dr["isactive"].ToString());
+
+        }
+        else
+        {
+            found = false;
+        }
+        dr.Close();
+        cn.Close();
+        if (found == true)
+        {
+            if (_isactive == false)
+            {
+                MessageBox.Show("Account is inactive.Unable to login ", "Inactive account", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (_role == "Cashier")
+            {
+
+                MessageBox.Show("Welcome " + _name + "!", "ACCESS GRANTED", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                txtPass.Clear();
+                txtUser.Clear();
+                this.Hide();
+                frmPOS f = new frmPOS(this);
+                f.LblUser.Text = _name;
+                f.lblName.Text = _name + "|" + _role;
+                f.ShowDialog();
+            }
+            else
+            {
+                MessageBox.Show("Welcome " + _name + "!", "ACCESS GRANTED", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                txtPass.Clear();
+                txtUser.Clear();
+                this.Hide();
+                Form1 frm = new Form1();
+                frm.lblName.Text = _name;
+                frm.lblUser.Text = _username;
+                frm.lblRole.Text = _role;
+                frm._pass = _pass;
+                frm._user = _username;
+               frm.MyDashbord();
+                frm.ShowDialog();
+            }
+        }else
+        {
+            MessageBox.Show("Invalid username or password " + _name + "!", "ACCESS DENIED", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+    
+
+    }catch(Exception ex)
+    {
+        cn.Close();
+        MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+    }
+}
+
+private void button1_Click(object sender, EventArgs e)
+{
+    try
+    {
+        if (MessageBox.Show("Save this record?click yes to Confirm", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+        {
+            cn.Open();
+            cm = new SqlCommand("INSERT INTO tblVendor(vender,address,contactperson,telephone,email,fax) values (@vender,@address,@contactperson,@telephone,@email,@fax)", cn);
+            cm.Parameters.AddWithValue("@vender", txtVendor.Text);
+            cm.Parameters.AddWithValue("@address", txtAddress.Text);
+            cm.Parameters.AddWithValue("@contactperson", txtContactPreson.Text);
+            cm.Parameters.AddWithValue("@telephone", txtTelephone.Text);
+            cm.Parameters.AddWithValue("@email", txtEmail.Text);
+            cm.Parameters.AddWithValue("@fax", txtFax.Text);
+            cm.ExecuteNonQuery();
+            cn.Close();
+            MessageBox.Show("Record has been successfully saved.");
+            Clear();
+            f.LoadRecords();
+
+        }
+    }
+    catch (Exception ex)
+    {
+        cn.Close();
+        MessageBox.Show(ex.Message, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+    }
+
+}
+ private void btnUpdate_Click(object sender, EventArgs e)
+ {
+     try
+     {
+         if (MessageBox.Show("Update this record? Click yes to Confirm", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+         {
+             cn.Open();
+             cm = new SqlCommand("UPDATE tblVendor set vender = @vender, address = @address, contactperson = @contactperson, telephone = @telephone, email= @email, fax= @fax where id =@id", cn);
+             cm.Parameters.AddWithValue("@vender", txtVendor.Text);
+             cm.Parameters.AddWithValue("@address", txtAddress.Text);
+             cm.Parameters.AddWithValue("@contactperson", txtContactPreson.Text);
+             cm.Parameters.AddWithValue("@telephone", txtTelephone.Text);
+             cm.Parameters.AddWithValue("@email", txtEmail.Text);
+             cm.Parameters.AddWithValue("@fax", txtFax.Text);
+             cm.Parameters.AddWithValue("@id", lblD.Text);
+             cm.ExecuteNonQuery();
+             cn.Close();
+             MessageBox.Show("Record has been successfully saved.");
+             Clear();
+             f.LoadRecords();
+             this.Dispose();
+         }
+     }
+     catch (Exception ex)
+     {
+         cn.Close();
+         MessageBox.Show(ex.Message, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+     }
+ }

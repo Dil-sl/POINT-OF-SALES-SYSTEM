@@ -32,11 +32,13 @@ namespace PosSystem
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.lblUser = new System.Windows.Forms.Label();
+            this.lblRole = new System.Windows.Forms.Label();
+            this.lblName = new System.Windows.Forms.Label();
+            this.panel3 = new System.Windows.Forms.Panel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.button9 = new System.Windows.Forms.Button();
-            this.lblUser = new System.Windows.Forms.Label();
             this.button2 = new System.Windows.Forms.Button();
-            this.lblRole = new System.Windows.Forms.Label();
             this.button8 = new System.Windows.Forms.Button();
             this.button7 = new System.Windows.Forms.Button();
             this.btnSalesHistory = new System.Windows.Forms.Button();
@@ -45,17 +47,15 @@ namespace PosSystem
             this.button4 = new System.Windows.Forms.Button();
             this.btnStock = new System.Windows.Forms.Button();
             this.btnVendor = new System.Windows.Forms.Button();
-            this.lblName = new System.Windows.Forms.Label();
             this.btnProduct = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
-            this.panel3 = new System.Windows.Forms.Panel();
             this.panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // panel1
             // 
-            this.panel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(158)))), ((int)(((byte)(132)))));
+            this.panel1.BackColor = System.Drawing.Color.YellowGreen;
             this.panel1.Location = new System.Drawing.Point(-2, 0);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(1302, 38);
@@ -63,7 +63,7 @@ namespace PosSystem
             // 
             // panel2
             // 
-            this.panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(37)))), ((int)(((byte)(38)))));
+            this.panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(64)))));
             this.panel2.Controls.Add(this.pictureBox1);
             this.panel2.Controls.Add(this.button9);
             this.panel2.Controls.Add(this.lblUser);
@@ -86,9 +86,52 @@ namespace PosSystem
             this.panel2.TabIndex = 1;
             this.panel2.Paint += new System.Windows.Forms.PaintEventHandler(this.panel2_Paint);
             // 
+            // lblUser
+            // 
+            this.lblUser.AutoSize = true;
+            this.lblUser.Location = new System.Drawing.Point(198, 8);
+            this.lblUser.Name = "lblUser";
+            this.lblUser.Size = new System.Drawing.Size(43, 17);
+            this.lblUser.TabIndex = 14;
+            this.lblUser.Text = "label1";
+            this.lblUser.Visible = false;
+            // 
+            // lblRole
+            // 
+            this.lblRole.BackColor = System.Drawing.Color.Transparent;
+            this.lblRole.Font = new System.Drawing.Font("Franklin Gothic Medium", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblRole.ForeColor = System.Drawing.Color.White;
+            this.lblRole.Location = new System.Drawing.Point(3, 76);
+            this.lblRole.Name = "lblRole";
+            this.lblRole.Size = new System.Drawing.Size(237, 23);
+            this.lblRole.TabIndex = 2;
+            this.lblRole.Text = "Administrator";
+            this.lblRole.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lblName
+            // 
+            this.lblName.Font = new System.Drawing.Font("Bahnschrift", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblName.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(158)))), ((int)(((byte)(132)))));
+            this.lblName.Location = new System.Drawing.Point(46, 57);
+            this.lblName.Name = "lblName";
+            this.lblName.Size = new System.Drawing.Size(150, 29);
+            this.lblName.TabIndex = 1;
+            this.lblName.Text = "User Name";
+            this.lblName.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // panel3
+            // 
+            this.panel3.BackColor = System.Drawing.Color.White;
+            this.panel3.ForeColor = System.Drawing.Color.Black;
+            this.panel3.Location = new System.Drawing.Point(263, 52);
+            this.panel3.Name = "panel3";
+            this.panel3.Size = new System.Drawing.Size(1016, 580);
+            this.panel3.TabIndex = 2;
+            this.panel3.Paint += new System.Windows.Forms.PaintEventHandler(this.panel3_Paint);
+            // 
             // pictureBox1
             // 
-            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
+            this.pictureBox1.Image = global::PosSystem.Properties.Resources.pngegg;
             this.pictureBox1.Location = new System.Drawing.Point(65, -2);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(108, 67);
@@ -113,16 +156,6 @@ namespace PosSystem
             this.button9.UseVisualStyleBackColor = true;
             this.button9.Click += new System.EventHandler(this.button9_Click);
             // 
-            // lblUser
-            // 
-            this.lblUser.AutoSize = true;
-            this.lblUser.Location = new System.Drawing.Point(198, 8);
-            this.lblUser.Name = "lblUser";
-            this.lblUser.Size = new System.Drawing.Size(43, 17);
-            this.lblUser.TabIndex = 14;
-            this.lblUser.Text = "label1";
-            this.lblUser.Visible = false;
-            // 
             // button2
             // 
             this.button2.FlatAppearance.BorderSize = 0;
@@ -138,18 +171,6 @@ namespace PosSystem
             this.button2.Text = "Stock Adjustment";
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
-            // 
-            // lblRole
-            // 
-            this.lblRole.BackColor = System.Drawing.Color.Transparent;
-            this.lblRole.Font = new System.Drawing.Font("Franklin Gothic Medium", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblRole.ForeColor = System.Drawing.Color.White;
-            this.lblRole.Location = new System.Drawing.Point(3, 76);
-            this.lblRole.Name = "lblRole";
-            this.lblRole.Size = new System.Drawing.Size(237, 23);
-            this.lblRole.TabIndex = 2;
-            this.lblRole.Text = "Administrator";
-            this.lblRole.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // button8
             // 
@@ -279,17 +300,6 @@ namespace PosSystem
             this.btnVendor.UseVisualStyleBackColor = true;
             this.btnVendor.Click += new System.EventHandler(this.btnVendor_Click);
             // 
-            // lblName
-            // 
-            this.lblName.Font = new System.Drawing.Font("Bahnschrift", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblName.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(158)))), ((int)(((byte)(132)))));
-            this.lblName.Location = new System.Drawing.Point(46, 57);
-            this.lblName.Name = "lblName";
-            this.lblName.Size = new System.Drawing.Size(150, 29);
-            this.lblName.TabIndex = 1;
-            this.lblName.Text = "User Name";
-            this.lblName.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // btnProduct
             // 
             this.btnProduct.FlatAppearance.BorderSize = 0;
@@ -321,16 +331,6 @@ namespace PosSystem
             this.button1.Text = "Dashboard";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // panel3
-            // 
-            this.panel3.BackColor = System.Drawing.Color.White;
-            this.panel3.ForeColor = System.Drawing.Color.Black;
-            this.panel3.Location = new System.Drawing.Point(263, 52);
-            this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(1016, 580);
-            this.panel3.TabIndex = 2;
-            this.panel3.Paint += new System.Windows.Forms.PaintEventHandler(this.panel3_Paint);
             // 
             // Form1
             // 
